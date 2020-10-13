@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>安全稽查数字化模块建设</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.15.3/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.15.3/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+
+<!--    <script src="../static/js/fileinput.js" type="text/javascript"></script>-->
+<!--    <link href="../static/css/fileinput.css" media="all" rel="stylesheet"/>-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.3/dist/bootstrap-table.min.css">
+</head>
+<body>
+    <h1 style="margin-left: 250px">安全稽查数字化模块建设</h1><br>
+<!--    <form enctype="multipart/form-data" style="width: 1000px; margin-left: 250px">-->
+<!--        <input id="fileimg" name="file" type="file" />-->
+<!--    </form>-->
+    <br>
+    <div style="width: 1000px; margin-left: 250px" >
+        <table id="bootstrap-table" ></table>
+    </div>
+    <br><br>
+    <button class="btn btn-large btn-primary" type="button" style="margin-left: 700px">提交表单</button>
+    <br><br><br>
+
+<script type="application/javascript">
+
+    $('#bootstrap-table').bootstrapTable({
+        url: '/data.json',
+        /*sidePagination: "true",*/
+        //pageSize: "9",             //每页显示4条
+        //pageList: [4, 8, 12, 20],        //可供选择的每页的行数（*）
+        // search:true,                //显示搜索
+        // searchOnEnterKey:true,      //Enter触发搜索
+        //pagination: true,           // 是否分页
+        striped: true,    //是否显示行间隔色
+        /*singleSelect:true,          //单选
+        checkboxHeader:false,       //隐藏checkbox全选*/
+        columns: [
+            {
+                field: 'rnumber',
+                title: '序号',
+                width: '10px'
+            },
+            {
+                field: 'ritem',
+                title: '检查项目',
+                width: '50px'
+            },
+            {
+                field: 'rseverity',
+                title: '严重程度',
+                width: '20px'
+            },
+            {
+                field: 'rspecific',
+                title: '具体问题展现',
+                width: '250px'
+            },
+            {
+                field: 'rproblem',
+                title: '检查问题',
+                width: '50px',
+                formatter: function (value, row , index) {
+                    return '<input type="text" id="rproblem" name="rproblem" >';
+                }
+            },
+            {
+                field: 'rimg',
+                title: '图片',
+                width: '20px',
+                formatter: function () {
+                    return '<input type="file" id="file" name="file" />';
+                }
+            },
+            {
+                field: 'bt',
+                title: '',
+                width: '20px',
+                formatter : function(value, row, index) {
+                    return "<button type='button' class='btn btn-success' onclick='insert("+row.rproblem+")'>保存</button>";
+                }
+            }
+        ],
+        onLoadSuccess: function () {//当所有数据被加载时触发处理函数
+            var data = $('#bootstrap-table').bootstrapTable('getData', true);//获取当前页数据
+            mergeCells(data,'number',1,$('#bootstrap-table'));
+            mergeCells(data,'item',1,$('#bootstrap-table'));
+            mergeCells(data,'severity',1,$('#bootstrap-table'));
+        },
+        onPageChange: function (){//当页面更改页码或页面大小时触发
+            var data = $('#bootstrap-table').bootstrapTable('getData', true);
+            mergeCells(data,'number',1,$('#bootstrap-table'));
+            mergeCells(data,'item',1,$('#bootstrap-table'));
+            mergeCells(data,'severity',1,$('#bootstrap-table'));
+        },
+    });
+    function mergeCells(data,fieldName,colspan,target){
+        //声明一个map计算相同属性值在data对象出现的次数和
+        var sortMap = {};
+        for(var i = 0 ; i < data.length ; i++){
+            for(var prop in data[i]){
+                if(prop == fieldName){
+                    var key = data[i][prop]     //fieldName的value
+                    if(sortMap.hasOwnProperty(key)){
+                        sortMap[key] = sortMap[key] * 1 + 1;
+                    } else {
+                        sortMap[key] = 1;
+                    }
+                    break;
+                }
+            }
+        }
+        /*for(var prop in sortMap){
+            console.log(prop,sortMap[prop])
+        }*/
+        //合并单元格
+        var index = 0;
+        for(var prop in sortMap){
+            var count = sortMap[prop] * 1;
+            $(target).bootstrapTable('mergeCells',{index:test, field:fieldName, colspan: colspan, rowspan: count});
+            test += count;
+        }
+    }
+    function changeData(index, obj) {
+        var value = $(obj).val();
+        var problem = $(obj).attr('problem');
+        //通过 index 获取指定的行
+        var row = $("#bootstrap-table").bootstrapTable('getOptions').data[test];
+        //将 input 的值存进 row 中
+        row[problem] = value;
+        //更新指定的行，调用 'updateRow' 则会将 row 数据更新到 data 中，然后再重新加载
+        $("#bootstrap-table").bootstrapTable('updateRow',{index: test, row: row});
+    }
+    function getSelections() {
+        return $.map($("#bootstrap-table").bootstrapTable('getSelections'), function (row) {
+            return row;
+        });
+    }
+
+    //添加执行结果 --没写
+    function insert(rproblem){
+
+    }
+</script>
+
+<!--<script>-->
+<!--    $('#fileimg').fileinput({-->
+<!--        language: 'zh', //设置语言-->
+<!--        uploadUrl: '/file/img', //上传的地址-->
+<!--        allowedFileExtensions : ['jpg', 'png','gif'],//接收的文件后缀-->
+<!--        showUpload: true, //是否显示上传按钮-->
+<!--        showCaption: false,//是否显示标题-->
+
+<!--    });-->
+<!--</script>-->
+</body>
+</html>

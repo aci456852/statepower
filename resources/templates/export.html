@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>安全稽查数字化模块建设</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/bootstrap-table@1.15.3/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.15.3/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.3/dist/bootstrap-table.min.css">
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+</head>
+<body>
+
+    <div style="margin-left: 50px;margin-top: 50px">
+        起始日期：<input type="date" name="choosetime1" id="choosetime1" value="" />
+        终止日期：<input type="date" name="choosetime2" id="choosetime2" value="" />
+        <a href="" onclick="choose(this)">导出表单</a>
+    </div>
+    <script type="text/javascript">
+        function choose(a) {
+            var time1 = 'time1=' + document.getElementById("choosetime1").value;
+            var time2 = 'time2=' + document.getElementById("choosetime2").value;
+            console.log(time1+" "+time2);
+            a.href = '/exportExcel?' + time1 +"&"+time2;
+        }
+    </script>
+
+
+    <div style="width: 1400px;margin-left: 50px">
+    <table class="table" id='listAll'></table>
+    </div>
+    <script>
+        $(function () {
+            $('#choosetime2').bind('input propertychange', function () {
+            $('#listAll').bootstrapTable('destroy');   //动态加载表格之前，先销毁表格
+            $('#listAll').bootstrapTable({
+                url: '/listAll',                      //请求后台的URL（*）
+                method: 'POST',                      //请求方式（*）
+                contentType : "application/x-www-form-urlencoded",
+                dataType:"json",
+                queryParams:queryParam, //规定取数据的方式
+                //toolbar: '#toolbar',              //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
+                pageSize: 5,                     //每页的记录行数（*）
+                pageList: [3, 5, 8, 10],        //可供选择的每页的行数（*）
+                smartDisplay:false,
+                search: true,                      //是否显示表格搜索
+                strictSearch: true,
+                showColumns: true,                  //是否显示所有的列（选择显示的列）
+                showRefresh: true,                  //是否显示刷新按钮
+                minimumCountColumns: 2,             //最少允许的列数
+                clickToSelect: true,                //是否启用点击选中行
+                //height: 400,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                uniqueId: "rid",                     //每一行的唯一标识，一般为主键列
+                theadClasses: "thead-light",    //这里设置表头样式
+                columns: [
+                    {
+                        field: 'rid',
+                        title: '记录号',
+                        width: '10px'
+                    },
+                    {
+                        field: 'rnumber',
+                        title: '序号',
+                        width: '10px'
+                    },
+                    {
+                        field: 'ritem',
+                        title: '检查项目',
+                        width: '50px'
+                    },
+                    {
+                        field: 'rseverity',
+                        title: '严重程度',
+                        width: '20px'
+                    },
+                    {
+                        field: 'rspecific',
+                        title: '具体问题展现',
+                        width: '250px'
+                    },
+                    {
+                        field: 'rproblem',
+                        title: '检查问题',
+                        width: '50px',
+                    },
+                    {
+                        field: 'rdate',
+                        title: '日期',
+                        width: '50px',
+                        formatter: function (value, row , index) {
+                            var time =new Date(value);
+                            return "<p>"+time.toLocaleString()+"</p>";
+                        }
+                    },
+                    {
+                        field: 'rimg',
+                        title: '图片',
+                        width: '20px',
+                        formatter: function (value, row , index) {
+                            var ImgUrl="data:image/jpeg;base64,"+value;
+                            return "<img style='width: 50px;height: 50px;' src='"+ImgUrl+"' alt=''>"
+                        }
+                    }
+                ],
+                onLoadSuccess:function() {
+                },
+                onLoadError: function () {
+                    console.log("数据加载失败！");
+                },
+
+            });
+            function queryParam(params) {
+                var param = {
+                    limit: this.limit, // 页面大小
+                    offset: this.offset, // 页码
+                    pageNumber: this.pageNumber,
+                    pageSize: this.pageSize,
+                    time1: $('#choosetime1').val(),
+                    time2: $('#choosetime2').val()
+                };
+                return param;
+            }
+            });
+        })
+    </script>
+
+
+    <div id="main" style="width: 800px;height:600px;margin-left: 350px;margin-top: 30px"></div>
+    <script type="text/javascript">
+        var myChart = echarts.init(document.getElementById('main'));
+        myChart.setOption({
+            title: {
+                text: '七必查占比分析',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: ['1.现场关键人员配置是否到位', '2.现场“一措施一方案一张票”是否存在错误', '3.现场施工装备是否存在安全隐患', '4.现场安全风险管控是否到位',
+                    '5.现场过程质量管控是否到位','6.现场是否存在重大事故隐患','7.是否落实人员实名制要求']
+            },
+            series: [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: [],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        });
+
+        $(function () {
+            $('#choosetime2').bind('input propertychange', function () {
+                $.ajax({
+                    type : "post",
+                    async : true,
+                    url : "/chart",
+                    data : {time1:$("input[name='choosetime1']").val(),time2:$("input[name='choosetime2']").val()},
+                    dataType : "json",
+                    success : function(data) {
+                        if (data) {
+                            console.log(data);
+                            myChart.setOption({        //加载数据图表
+                                series: [{
+                                    data: [
+                                        {value: data[1], name: '1.现场关键人员配置是否到位'},
+                                        {value: data[2], name: '2.现场“一措施一方案一张票”是否存在错误'},
+                                        {value: data[3], name: '3.现场施工装备是否存在安全隐患'},
+                                        {value: data[4], name: '4.现场安全风险管控是否到位'},
+                                        {value: data[5], name: '5.现场过程质量管控是否到位'},
+                                        {value: data[6], name: '6.现场是否存在重大事故隐患'},
+                                        {value: data[7], name: '7.是否落实人员实名制要求'},
+                                        {value: data[8], name: '8.其他'}
+                                    ]
+                                }]
+                            });
+                        }
+                    },
+                    error : function(errorMsg) {
+                        alert("图表请求数据失败!");
+                        myChart.hideLoading();
+                    }
+                })
+            });
+        })
+
+    </script>
+
+
+
+    <br><br>
+</body>
+</html>

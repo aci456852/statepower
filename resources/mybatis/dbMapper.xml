@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 映射文件，映射到对应的SQL接口 -->
+<mapper namespace="com.example.statepower.DataMapper">
+
+    <!--返回的结果集，用于关联实体类属性和数据库字段 -->
+    <!--如果实体类属性和数据库属性名保持一致，就不需要javaType和jdbcType（必须大写）属性 -->
+    <resultMap id="Record_resultMap" type="com.example.statepower.bean.Record">
+        <result column="rid" property="rid" javaType="java.lang.Integer" jdbcType="INTEGER" />
+        <result column="rnumber" property="rnumber" javaType="java.lang.Integer" jdbcType="INTEGER" />
+        <result column="ritem" property="ritem" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result column="rseverity" property="rseverity" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result column="rspecific" property="rspecific" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result column="rproblem" property="rproblem" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result column="rimg" property="rimg" javaType="java.lang.Byte" jdbcType="BLOB" typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+        <result column="rdate" property="rdate" javaType="java.util.Date" jdbcType="DATE" />
+    </resultMap>
+
+    <!-- 显示数据 -->
+    <select id="listALL" resultMap="Record_resultMap">
+        select * from record order by rid
+    </select>
+
+    <!-- 按照日期查询数据-->
+    <select id="listTime" resultMap="Record_resultMap">
+        select * from record where rdate between to_date(#{time1},'yyyy-mm-dd') and to_date(#{time2},'yyyy-mm-dd')
+    </select>
+
+<!--    &lt;!&ndash; 查询数据 &ndash;&gt;-->
+<!--    &lt;!&ndash; 入参定义：在接口定义中使用@Param注解(单参/多参都可使用) &ndash;&gt;-->
+<!--    &lt;!&ndash; 语句末尾不能有分号：ORA-00911: invalid character &ndash;&gt;-->
+<!--    <select id="ruleQuery" resultMap="Rule_resultMap">-->
+<!--        select * from Rule where ppos like '%'||#{ppos}||'%'-->
+<!--    </select>-->
+
+    <!-- 插入数据 -->
+    <!-- 入参定义：实体类，会自动解析属性到对应的值-->
+    <insert id="Insert" parameterType="com.example.statepower.bean.Record">
+		insert into record (rnumber,ritem,rseverity,rspecific,rproblem,rimg)
+		values (#{rnumber}, #{ritem}, #{rseverity}, #{rspecific}, #{rproblem}, #{rimg})
+	</insert>
+
+<!--    &lt;!&ndash; 更新数据 &ndash;&gt;-->
+<!--    &lt;!&ndash; 入参定义：在接口定义中使用@Param注解(多参情况，只能使用这种形式) &ndash;&gt;-->
+<!--    <update id="ruleUpdate">-->
+<!--		UPDATE Rule SET ppos = #{ppos}-->
+<!--		WHERE pid = #{pid}-->
+<!--	</update>-->
+
+<!--    &lt;!&ndash; 删除数据 &ndash;&gt;-->
+<!--    &lt;!&ndash; 入参定义：parameterType指定输入参数(单参情况，亦可@Param注解) &ndash;&gt;-->
+<!--    <delete id="ruleDelete" parameterType="java.lang.Integer">-->
+<!--		DELETE FROM Rule WHERE pid =#{pid}-->
+<!--	</delete>-->
+
+</mapper>
